@@ -30,6 +30,50 @@ namespace WindowsGSM.Plugins
 		public override string AppId => "533830"; // https://steamdb.info/app/533830/
 
 		// Standard variables
+		public override string StartPath => "win64/starbound_server.exe";
+		public string FullName => "Starbound Dedicated Server";
+		public bool AllowsEmbedConsole = true; // TODO ScoWalt is this right? // Does this server support output redirect?
+		public int PortIncrements = 1; // This tells WindowsGSM how many ports should skip after installation
+		public object QueryMethod = null;
 
+		public string Port = "21025"; // Default port
+		public string QueryPort = "21025"; // Default Query Port
+		public string Defaultmap = "empty"; // Default map name (arbitrary for Starbound)
+		public string Maxplayers = "8"; // Default maxplayers
+		public string Additional = ""; // Additional server start parameter
+
+		// Standard functions
+		public async void CreateServerCFG() { /* Starbound creates its own default server config on first launch */ }
+		public async Task<Process> Start()
+		{
+			var p = new Process
+			{
+				StartInfo =
+				{
+					WindowStyle = ProcessWindowStyle.Minimized,
+					UseShellExecute = false,
+					WorkingDirectory = ServerPath.GetServersServerFiles(_serverData.ServerID),
+					FileName = ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath),
+					Arguments = ""
+				},
+				EnableRaisingEvents = true
+			}
+
+			try
+			{
+				p.Start();
+				return p;
+			}
+			catch (Exception)
+			{
+				base.Error = e.message;
+				return null;
+			}
+		}
+		public async Task Stop(Process p)
+		{
+			// Starbound Dedicated Server doesn't appear to have a proper shutdown
+			await Task.Run(() => { p.Kill(); });
+		}
 	}
 }
